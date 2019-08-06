@@ -153,9 +153,11 @@ class Brick {
     ctx.fillStyle = "#000";
     ctx.fillRect(this.position.x, this.position.y, this.width, this.height);
   }
-  //
+  // Reverses ball direction if it hits a brick.
   update() {
-
+    if(collisionDetection(this.gameStructureEngine.gameBall, this)) {
+      this.gameStructureEngine.gameBall.speed.y = -this.gameStructureEngine.gameBall.speed.y;
+    }
   }
 }
 
@@ -190,7 +192,7 @@ function buildStage(gameStructureEngine, stage) {
     row.forEach((brick, brickStructure) => {
       if (brick === 1) {
         let position = {
-          x: 68 * brickStructure,
+          x: 62 * brickStructure,
           y: 60 + 30 * rowStructure
         };
         bricks.push(new Brick(gameStructureEngine, position));
@@ -201,15 +203,15 @@ function buildStage(gameStructureEngine, stage) {
 }
 
 const stage1 = [
-  [0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1],
-  [0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1],
-  [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0],
-  [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0],
-  [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0],
-  [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0],
-  [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0],
-  [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0],
-  [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+  [0, 1, 1, 0, 0, 1, 1, 1, 0, 0, 1, 1],
+  [0, 1, 1, 0, 0, 1, 1, 1, 0, 0, 1, 1],
+  [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0],
+  [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0],
+  [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0],
+  [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0],
+  [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0],
+  [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0],
+  [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
 ];
 
 
