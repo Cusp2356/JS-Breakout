@@ -65,15 +65,15 @@ class PlayerPaddle {
   motionStop() {
     this.speed = 0;
   }
-  // Colors in the paddle.
+  // Color in the paddle.
   draw(ctx) {
+    ctx.shadowBlur = 3;
+    ctx.shadowColor = "#000";
     ctx.fillStyle = "#000";
     ctx.fillRect(this.position.x, this.position.y, this.width, this.height);
   }
   // Moves position based on change in time.
   update(timeChange) {
-    // If time counting hasn't started, don't crash, and continue to next frame.
-    if(!timeChange) return;
     // Changes position based on defined speed for each frame.
     this.position.x += this.speed;
     // Stops motion if paddle hits edge of screen on the left.
@@ -88,25 +88,35 @@ class PlayerPaddle {
 // Ball
 
 class Ball {
-  //  Define player paddle attributes.
+  //  Define ball attributes.
   constructor(interactiveWidth, interactiveHeight) {
 
-    // Define paddle size, shape, attributes.
-    this.width = 20;
-    this.height = 20;
-    this.maxSpeed = 4;
-    this.speed = 0;
+    // Define ball size, shape, attributes.
+    this.width = 24;
+    this.height = 24;
+    // this.maxSpeed = 4;
+    this.speed = { x: 0.1, y: 2 };
 
-    // Define paddle start location.
-    this.position = {
-      x: interactiveWidth / 2 - this.width / 2,
-      y: interactiveHeight - this.height - 20
-    }
+    // Define ball start location.
+    this.position = { x: playableWidth / 2 , y: playableHeight / 2 };
   }
-  // Colors in the paddle.
+  // Color in the ball.
   draw(ctx) {
+    ctx.shadowBlur = 30;
+    ctx.shadowColor = "#000";
     ctx.fillStyle = "#000";
     ctx.fillRect(this.position.x, this.position.y, this.width, this.height);
+  }
+  // Moves position based on change in time.
+  update(timeChange) {
+    // Changes position based on defined speed for each frame.
+    this.position.x += this.speed.x;
+    this.position.y += this.speed.y;
+    // Stops motion if paddle hits edge of screen on the left.
+    if(this.position.x < 0) this.position.x = 0;
+    // Stops motion if paddle hits edge of screen on the right.
+    if(this.position.x + this.width > this.interactiveWidth)
+      this.position.x = this.interactiveWidth - this.width;
   }
 }
 
@@ -124,6 +134,10 @@ const playableHeight = 600;
 let playerPaddle = new PlayerPaddle(playableWidth, playableHeight);
 playerPaddle.draw(ctx);
 
+// Define and create an interactive ball.
+let gameBall = new Ball(playableWidth, playableHeight);
+gameBall.draw(ctx);
+
 // Define player keyboard actions.
 new PlayerInput(playerPaddle);
 
@@ -137,14 +151,16 @@ function gameUpdate(timeCurrent) {
   timePrevious = timeCurrent;
 
   // Clear the screen every frame before drawing game screen frame changes.
-  ctx.clearRect(0, 0, 800, 600);
+  ctx.clearRect(0, 0, playableWidth, playableHeight);
 
-  // Redraw player paddle.
+  // Redraw game pieces each frame.
   playerPaddle.update(timeChange);
   playerPaddle.draw(ctx);
+  gameBall.update(timeChange);
+  gameBall.draw(ctx);
 
   // Get time frame of reference for each browser animation frame.
   requestAnimationFrame(gameUpdate);
 }
 
-gameUpdate();
+requestAnimationFrame(gameUpdate);
