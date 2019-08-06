@@ -1,7 +1,7 @@
 // Player Input
 
 class PlayerInput {
-  constructor() {
+  constructor(playerPaddle) {
 
     document.addEventListener("keydown", event => {
       switch(event.keyCode) {
@@ -38,10 +38,10 @@ class PlayerInput {
 
 class PlayerPaddle {
   //  Define player paddle attributes.
-  constructor(interactiveWidth, interactiveHeight) {
+  constructor(gameStructureEngine) {
 
     // Define paddle size, shape, movement.
-    this.interactiveWidth = interactiveWidth;
+    this.interactiveWidth = gameStructureEngine.interactiveWidth;
     this.width = 100;
     this.height = 14;
     this.maxSpeed = 4;
@@ -49,8 +49,8 @@ class PlayerPaddle {
 
     // Define paddle start location.
     this.position = {
-      x: interactiveWidth / 2 - this.width / 2,
-      y: interactiveHeight - this.height - 20
+      x: gameStructureEngine.interactiveWidth / 2 - this.width / 2,
+      y: gameStructureEngine.interactiveHeight - this.height - 20
     }
   }
   // Defines player motion left.
@@ -89,15 +89,15 @@ class PlayerPaddle {
 
 class Ball {
   //  Define ball attributes.
-  constructor(interactiveWidth, interactiveHeight) {
+  constructor(gameStructureEngine) {
 
-    this.interactiveWidth = interactiveWidth;
-    this.interactiveHeight = interactiveHeight;
+    this.interactiveWidth = gameStructureEngine.interactiveWidth;
+    this.interactiveHeight = gameStructureEngine.interactiveHeight;
 
     // Define ball size.
     this.size = 24;
     // this.maxSpeed = 4;
-    this.speed = { x: 3, y: 5};
+    this.speed = { x: 5, y: 3};
 
     // Define ball start location.
     this.position = { x: playableWidth / 2 , y: playableHeight / 2 };
@@ -126,7 +126,45 @@ class Ball {
 }
 
 
-// General Dynamics
+//  Game Dynamics
+
+class GameStructure {
+  //  Define ball attributes.
+  constructor(interactiveWidth, interactiveHeight) {
+
+    this.interactiveWidth = interactiveWidth;
+    this.interactiveHeight = interactiveHeight;
+
+  }
+  gameBegin() {
+    // Define an interactive player paddle.
+    // let playerPaddle = new PlayerPaddle(playableWidth, playableHeight);
+
+    // Define an interactive ball.
+    // let gameBall = new Ball(playableWidth, playableHeight);
+
+    // Define an interactive player paddle.
+    this.playerPaddle = new PlayerPaddle(this);
+
+    // Define an interactive ball.
+    this.gameBall = new Ball(this);
+
+    // Define player keyboard actions.
+    new PlayerInput(this.playerPaddle);
+  }
+  update(timeChange){
+    this.playerPaddle.update(timeChange);
+    this.gameBall.update(timeChange);
+  }
+
+  draw(ctx) {
+    this.playerPaddle.draw(ctx);
+    this.gameBall.draw(ctx);
+  }
+}
+
+
+// Game Engine
 
 let canvas = document.getElementById("gameBox");
 let ctx = canvas.getContext("2d");
@@ -135,16 +173,9 @@ let ctx = canvas.getContext("2d");
 const playableWidth = 800;
 const playableHeight = 600;
 
-// Define and create an interactive player paddle.
-let playerPaddle = new PlayerPaddle(playableWidth, playableHeight);
-playerPaddle.draw(ctx);
-
-// Define and create an interactive ball.
-let gameBall = new Ball(playableWidth, playableHeight);
-gameBall.draw(ctx);
-
-// Define player keyboard actions.
-new PlayerInput(playerPaddle);
+// Brings in dynamics between different game objects.
+let gameStructureEngine = new GameStructure(playableWidth, playableHeight);
+gameStructureEngine.gameBegin();
 
 let timePrevious = 0;
 
@@ -159,10 +190,8 @@ function gameUpdate(timeCurrent) {
   ctx.clearRect(0, 0, playableWidth, playableHeight);
 
   // Redraw game pieces each frame.
-  playerPaddle.update(timeChange);
-  playerPaddle.draw(ctx);
-  gameBall.update(timeChange);
-  gameBall.draw(ctx);
+  gameStructureEngine.update(timeChange);
+  gameStructureEngine.draw(ctx);
 
   // Get time frame of reference for each browser animation frame.
   requestAnimationFrame(gameUpdate);
