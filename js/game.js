@@ -139,6 +139,33 @@ class Ball {
 }
 
 
+// Brick
+
+class Brick {
+  //  Define player paddle attributes.
+  constructor(gameStructureEngine, position) {
+
+    this.gameStructureEngine = gameStructureEngine;
+    this.position = position;
+
+    // Define brick size, shape.
+    this.width = 50;
+    this.height = 25;
+  }
+  // Color in the paddle.
+  draw(ctx) {
+    ctx.shadowBlur = 3;
+    ctx.shadowColor = "#000";
+    ctx.fillStyle = "#000";
+    ctx.fillRect(this.position.x, this.position.y, this.width, this.height);
+  }
+  //
+  update() {
+
+  }
+}
+
+
 //  Game Dynamics
 
 class GameStructure {
@@ -157,8 +184,13 @@ class GameStructure {
     // Define an interactive ball.
     this.gameBall = new Ball(this);
 
+    let bricks = [];
+    for(let i=0; i<8; i++) {
+      bricks.push(new Brick(this, { x: i * 70, y: 40}))
+    }
+
     // Define gameObjects to be acted upon in bulk elsewhere.
-    this.gameObjects = [this.playerPaddle,this.gameBall];
+    this.gameObjects = [this.playerPaddle,this.gameBall, ...bricks];
 
     // Define player keyboard actions.
     new PlayerInput(this.playerPaddle);
