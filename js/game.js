@@ -1,12 +1,35 @@
-// Player paddle
+// Player Input
 
-class Player {
+class PlayerInput {
+  constructor() {
+    document.addEventListener("keydown", event => {
+      switch(event.keyCode) {
+        // Left key moves paddle left.
+        case 37:
+          playerPaddle.motionLeft();
+          break;
+
+        case 39:
+          playerPaddle.motionRight();
+          break;
+      }
+    });
+  }
+}
+
+
+// Player Paddle
+
+class PlayerPaddle {
   //  Define player paddle attributes.
   constructor(interactiveWidth, interactiveHeight) {
 
-    // Define paddle size and shape.
+    // Define paddle size, shape, attributes.
+    this.interactiveWidth = interactiveWidth;
     this.width = 100;
     this.height = 14;
+    this.maxSpeed = 4;
+    this.speed = 0;
 
     // Define paddle start location.
     this.position = {
@@ -14,20 +37,35 @@ class Player {
       y: interactiveHeight - this.height - 20
     }
   }
+  // Defines player motion left.
+  motionLeft() {
+    this.speed = -this.maxSpeed;
+  }
+  // Defines player motion right.
+  motionRight() {
+    this.speed = this.maxSpeed;
+  }
+  // Colors in the paddle.
   draw(ctx) {
     ctx.fillStyle = "#000";
     ctx.fillRect(this.position.x, this.position.y, this.width, this.height);
   }
-  // Moves position based on change in time
+  // Moves position based on change in time.
   update(timeChange) {
+    // If time counting hasn't started, don't crash, and continue to next frame.
     if(!timeChange) return;
-    this.position.x += 10 / timeChange;
+    // Changes position based on defined speed for each frame.
+    this.position.x += this.speed;
+    // Stops motion if paddle hits edge of screen on the left.
+    if(this.position.x < 0) this.position.x = 0;
+    // Stops motion if paddle hits edge of screen on the right.
+    if(this.position.x + this.width > this.interactiveWidth)
+      this.position.x = this.interactiveWidth - this.width;
   }
 }
 
 
-
-// General dynamics
+// General Dynamics
 
 let canvas = document.getElementById("gameBox");
 let ctx = canvas.getContext("2d");
@@ -37,8 +75,11 @@ const playableWidth = 800;
 const playableHeight = 600;
 
 // Define and create an interactive player paddle.
-let player = new Player(playableWidth, playableHeight);
-player.draw(ctx);
+let playerPaddle = new PlayerPaddle(playableWidth, playableHeight);
+playerPaddle.draw(ctx);
+
+// Define player keyboard actions.
+new PlayerInput(playerPaddle);
 
 let timePrevious = 0;
 
@@ -53,8 +94,8 @@ function gameUpdate(timeCurrent) {
   ctx.clearRect(0, 0, 800, 600);
 
   // Redraw player paddle.
-  player.update(timeChange);
-  player.draw(ctx);
+  playerPaddle.update(timeChange);
+  playerPaddle.draw(ctx);
 
   // Get time frame of reference for each browser animation frame.
   requestAnimationFrame(gameUpdate);
