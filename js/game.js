@@ -91,11 +91,13 @@ class Ball {
   //  Define ball attributes.
   constructor(interactiveWidth, interactiveHeight) {
 
-    // Define ball size, shape, attributes.
-    this.width = 24;
-    this.height = 24;
+    this.interactiveWidth = interactiveWidth;
+    this.interactiveHeight = interactiveHeight;
+
+    // Define ball size.
+    this.size = 24;
     // this.maxSpeed = 4;
-    this.speed = { x: 0.1, y: 2 };
+    this.speed = { x: 3, y: 5};
 
     // Define ball start location.
     this.position = { x: playableWidth / 2 , y: playableHeight / 2 };
@@ -105,18 +107,21 @@ class Ball {
     ctx.shadowBlur = 30;
     ctx.shadowColor = "#000";
     ctx.fillStyle = "#000";
-    ctx.fillRect(this.position.x, this.position.y, this.width, this.height);
+    ctx.fillRect(this.position.x, this.position.y, this.size, this.size);
   }
   // Moves position based on change in time.
   update(timeChange) {
     // Changes position based on defined speed for each frame.
     this.position.x += this.speed.x;
     this.position.y += this.speed.y;
-    // Stops motion if paddle hits edge of screen on the left.
-    if(this.position.x < 0) this.position.x = 0;
-    // Stops motion if paddle hits edge of screen on the right.
-    if(this.position.x + this.width > this.interactiveWidth)
-      this.position.x = this.interactiveWidth - this.width;
+    // Reverses motion if ball hits either wall.
+    if(this.position.x + this.size > this.interactiveWidth || this.position.x < 0) {
+      this.speed.x = -this.speed.x;
+    }
+    // Reverses motion if ball hits the floor or ceiling.
+    if(this.position.y + this.size > this.interactiveHeight || this.position.y < 0) {
+      this.speed.y = -this.speed.y;
+    }
   }
 }
 
