@@ -106,7 +106,7 @@ class Ball {
   // Color in the ball.
   draw(ctx) {
     ctx.shadowBlur = 30;
-    ctx.shadowColor = "#000";
+    ctx.shadowColor = "#f00";
     ctx.fillStyle = "#000";
     ctx.fillRect(this.position.x, this.position.y, this.size, this.size);
   }
@@ -154,8 +154,8 @@ class Brick {
   }
   // Color in the paddle.
   draw(ctx) {
-    ctx.shadowBlur = 3;
-    ctx.shadowColor = "#000";
+    ctx.shadowBlur = 100;
+    ctx.shadowColor = "#09f";
     ctx.fillStyle = "#000";
     ctx.fillRect(this.position.x, this.position.y, this.width, this.height);
   }
@@ -164,6 +164,39 @@ class Brick {
 
   }
 }
+
+
+// Game Stages
+
+function buildStage(gameStructureEngine, stage) {
+  let bricks = [];
+
+  stage.forEach((row, rowStructure) => {
+    row.forEach((brick, brickStructure) => {
+      if (brick === 1) {
+        let position = {
+          x: 68 * brickStructure,
+          y: 60 + 30 * rowStructure
+        };
+        bricks.push(new Brick(gameStructureEngine, position));
+      }
+    });
+  });
+  return bricks;
+}
+
+const stage1 = [
+  [0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1],
+  [0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1],
+  [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0],
+  [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0],
+  [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0],
+  [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0],
+  [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0],
+  [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0],
+  [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+];
+
 
 
 //  Game Dynamics
@@ -184,10 +217,7 @@ class GameStructure {
     // Define an interactive ball.
     this.gameBall = new Ball(this);
 
-    let bricks = [];
-    for(let i=0; i<8; i++) {
-      bricks.push(new Brick(this, { x: i * 70, y: 40}))
-    }
+    let bricks = buildStage(this, stage1);
 
     // Define gameObjects to be acted upon in bulk elsewhere.
     this.gameObjects = [this.playerPaddle,this.gameBall, ...bricks];
