@@ -2,15 +2,31 @@
 
 class PlayerInput {
   constructor() {
+
     document.addEventListener("keydown", event => {
       switch(event.keyCode) {
         // Left key moves paddle left.
         case 37:
           playerPaddle.motionLeft();
           break;
-
+        // Right key moves paddle right.
         case 39:
           playerPaddle.motionRight();
+          break;
+      }
+    });
+
+    document.addEventListener("keyup", event => {
+      switch(event.keyCode) {
+        // Releasing left key halts left movement.
+        case 37:
+          if(playerPaddle.speed < 0)
+            playerPaddle.motionStop();
+          break;
+        // Releasing right key halts right movement.
+        case 39:
+          if(playerPaddle.speed > 0)
+            playerPaddle.motionStop();
           break;
       }
     });
@@ -24,7 +40,7 @@ class PlayerPaddle {
   //  Define player paddle attributes.
   constructor(interactiveWidth, interactiveHeight) {
 
-    // Define paddle size, shape, attributes.
+    // Define paddle size, shape, movement.
     this.interactiveWidth = interactiveWidth;
     this.width = 100;
     this.height = 14;
@@ -45,6 +61,10 @@ class PlayerPaddle {
   motionRight() {
     this.speed = this.maxSpeed;
   }
+  // Defines player motion halt.
+  motionStop() {
+    this.speed = 0;
+  }
   // Colors in the paddle.
   draw(ctx) {
     ctx.fillStyle = "#000";
@@ -61,6 +81,32 @@ class PlayerPaddle {
     // Stops motion if paddle hits edge of screen on the right.
     if(this.position.x + this.width > this.interactiveWidth)
       this.position.x = this.interactiveWidth - this.width;
+  }
+}
+
+
+// Ball
+
+class Ball {
+  //  Define player paddle attributes.
+  constructor(interactiveWidth, interactiveHeight) {
+
+    // Define paddle size, shape, attributes.
+    this.width = 20;
+    this.height = 20;
+    this.maxSpeed = 4;
+    this.speed = 0;
+
+    // Define paddle start location.
+    this.position = {
+      x: interactiveWidth / 2 - this.width / 2,
+      y: interactiveHeight - this.height - 20
+    }
+  }
+  // Colors in the paddle.
+  draw(ctx) {
+    ctx.fillStyle = "#000";
+    ctx.fillRect(this.position.x, this.position.y, this.width, this.height);
   }
 }
 
