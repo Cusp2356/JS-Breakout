@@ -123,15 +123,9 @@ class Ball {
     if(this.position.y + this.size > this.interactiveHeight || this.position.y < 0) {
       this.speed.y = -this.speed.y;
     }
+
     // Reverses motion if ball hits player paddle.
-    let ballBottom = this.position.y + this.size;
-    let playerPaddleTop = this.gameStructureEngine.playerPaddle.position.y;
-    let playerPaddleLeftSide = this.gameStructureEngine.playerPaddle.position.x;
-    let playerPaddleRightSide = this.gameStructureEngine.playerPaddle.position.x
-                                + this.gameStructureEngine.playerPaddle.width;
-    if(ballBottom >= playerPaddleTop
-      && this.position.x >= playerPaddleLeftSide
-      && this.position.x + this.size <= playerPaddleRightSide) {
+    if(collisionDetection(this, this.gameStructureEngine.playerPaddle)) {
       this.speed.y = -this.speed.y;
       this.position.y = this.gameStructureEngine.playerPaddle.position.y - this.size;
     }
@@ -162,6 +156,27 @@ class Brick {
   //
   update() {
 
+  }
+}
+
+
+// Collision Detection
+
+function collisionDetection(ball, gameObject) {
+  // Reverses motion if ball hits player paddle.
+  let ballBottom = ball.position.y + ball.size;
+  let ballTop = ball.position.y;
+  let objectTop = gameObject.position.y;
+  let objectLeftSide = gameObject.position.x;
+  let objectRightSide = gameObject.position.x + gameObject.width;
+  let objectBottom = gameObject.position.y + gameObject.height;
+  if(ballBottom >= objectTop
+    && ballTop <= objectBottom
+    && ball.position.x >= objectLeftSide
+    && ball.position.x + ball.size <= objectRightSide) {
+    return true;
+  } else {
+    return false;
   }
 }
 
