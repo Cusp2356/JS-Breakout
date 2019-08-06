@@ -93,6 +93,7 @@ class Ball {
 
     this.interactiveWidth = gameStructureEngine.interactiveWidth;
     this.interactiveHeight = gameStructureEngine.interactiveHeight;
+    this.gameStructureEngine = gameStructureEngine;
 
     // Define ball size.
     this.size = 24;
@@ -122,6 +123,18 @@ class Ball {
     if(this.position.y + this.size > this.interactiveHeight || this.position.y < 0) {
       this.speed.y = -this.speed.y;
     }
+    // Reverses motion if ball hits player paddle.
+    let ballBottom = this.position.y + this.size;
+    let playerPaddleTop = this.gameStructureEngine.playerPaddle.position.y;
+    let playerPaddleLeftSide = this.gameStructureEngine.playerPaddle.position.x;
+    let playerPaddleRightSide = this.gameStructureEngine.playerPaddle.position.x
+                                + this.gameStructureEngine.playerPaddle.width;
+    if(ballBottom >= playerPaddleTop
+      && this.position.x >= playerPaddleLeftSide
+      && this.position.x + this.size <= playerPaddleRightSide) {
+      this.speed.y = -this.speed.y;
+      this.position.y = this.gameStructureEngine.playerPaddle.position.y - this.size;
+    }
   }
 }
 
@@ -137,11 +150,6 @@ class GameStructure {
 
   }
   gameBegin() {
-    // Define an interactive player paddle.
-    // let playerPaddle = new PlayerPaddle(playableWidth, playableHeight);
-
-    // Define an interactive ball.
-    // let gameBall = new Ball(playableWidth, playableHeight);
 
     // Define an interactive player paddle.
     this.playerPaddle = new PlayerPaddle(this);
@@ -149,17 +157,17 @@ class GameStructure {
     // Define an interactive ball.
     this.gameBall = new Ball(this);
 
+    // Define gameObjects to be acted upon in bulk elsewhere.
+    this.gameObjects = [this.playerPaddle,this.gameBall];
+
     // Define player keyboard actions.
     new PlayerInput(this.playerPaddle);
   }
   update(timeChange){
-    this.playerPaddle.update(timeChange);
-    this.gameBall.update(timeChange);
+    this.gameObjects.forEach((object) => object.update(timeChange));
   }
-
   draw(ctx) {
-    this.playerPaddle.draw(ctx);
-    this.gameBall.draw(ctx);
+    this.gameObjects.forEach((object) => object.draw(ctx));
   }
 }
 
