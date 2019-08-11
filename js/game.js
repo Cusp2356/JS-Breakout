@@ -1,7 +1,7 @@
 // Player Input
 
 class PlayerInput {
-  constructor(playerPaddle) {
+  constructor(playerPaddle, gameStructureEngine) {
 
     document.addEventListener("keydown", event => {
       switch(event.keyCode) {
@@ -12,6 +12,10 @@ class PlayerInput {
         // Right key moves paddle right.
         case 39:
           playerPaddle.motionRight();
+          break;
+          // Pause or unpause the game with p key.
+        case 80:
+          gameStructureEngine.pause();
           break;
       }
     });
@@ -42,9 +46,10 @@ class PlayerPaddle {
 
     // Define paddle size, shape, movement.
     this.interactiveWidth = gameStructureEngine.interactiveWidth;
-    this.width = 100;
+    this.interactiveHeight = gameStructureEngine.interactiveHeight;
+    this.width = 80;
     this.height = 14;
-    this.maxSpeed = 4;
+    this.maxSpeed = 10;
     this.speed = 0;
 
     // Define paddle start location.
@@ -68,7 +73,7 @@ class PlayerPaddle {
   // Color in the paddle.
   draw(ctx) {
     ctx.shadowBlur = 3;
-    ctx.shadowColor = "#000";
+    ctx.shadowColor = "#979";
     ctx.fillStyle = "#000";
     ctx.fillRect(this.position.x, this.position.y, this.width, this.height);
   }
@@ -96,19 +101,21 @@ class Ball {
     this.gameStructureEngine = gameStructureEngine;
 
     // Define ball size.
-    this.size = 24;
+    this.size = 8;
     // this.maxSpeed = 4;
-    this.speed = { x: 5, y: 3};
+    this.speed = { x: 8, y: 8};
 
     // Define ball start location.
-    this.position = { x: playableWidth / 2 , y: playableHeight / 2 };
+    this.position = { x: playableWidth / 3 , y: playableHeight / 1.4 };
   }
   // Color in the ball.
   draw(ctx) {
-    ctx.shadowBlur = 30;
+    ctx.shadowBlur = 2;
     ctx.shadowColor = "#f00";
     ctx.fillStyle = "#000";
-    ctx.fillRect(this.position.x, this.position.y, this.size, this.size);
+    // ctx.fillRect(this.position.x, this.position.y, this.size, this.size);
+    ctx.arc(this.position.x, this.position.y, this.size, this.size, this.size * Math.PI);
+    ctx.stroke();
   }
   // Moves position based on change in time.
   update(timeChange) {
@@ -143,12 +150,14 @@ class Brick {
     this.position = position;
 
     // Define brick size, shape.
-    this.width = 50;
-    this.height = 25;
+    this.width = 57;
+    this.height = 30;
+
+    this.destroyBrick = false;
   }
   // Color in the paddle.
   draw(ctx) {
-    ctx.shadowBlur = 100;
+    ctx.shadowBlur = 8;
     ctx.shadowColor = "#09f";
     ctx.fillStyle = "#000";
     ctx.fillRect(this.position.x, this.position.y, this.width, this.height);
@@ -157,6 +166,7 @@ class Brick {
   update() {
     if(collisionDetection(this.gameStructureEngine.gameBall, this)) {
       this.gameStructureEngine.gameBall.speed.y = -this.gameStructureEngine.gameBall.speed.y;
+      this.destroyBrick = true;
     }
   }
 }
@@ -193,7 +203,7 @@ function buildStage(gameStructureEngine, stage) {
       if (brick === 1) {
         let position = {
           x: 62 * brickStructure,
-          y: 60 + 30 * rowStructure
+          y: 70 + 55 * rowStructure
         };
         bricks.push(new Brick(gameStructureEngine, position));
       }
@@ -208,15 +218,19 @@ const stage1 = [
   [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0],
   [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0],
   [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0],
-  [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0],
-  [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0],
-  [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0],
-  [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+  [0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0]
 ];
 
 
 
 //  Game Dynamics
+
+const GAMESCREEN = {
+  PAUSE: 0,
+  ACTIVE: 1,
+  MAINMENU: 2,
+  GAMEOVER: 3
+}
 
 class GameStructure {
   //  Define ball attributes.
@@ -227,6 +241,8 @@ class GameStructure {
 
   }
   gameBegin() {
+
+    this.gamescreen = GAMESCREEN.ACTIVE;
 
     // Define an interactive player paddle.
     this.playerPaddle = new PlayerPaddle(this);
@@ -240,13 +256,37 @@ class GameStructure {
     this.gameObjects = [this.playerPaddle,this.gameBall, ...bricks];
 
     // Define player keyboard actions.
-    new PlayerInput(this.playerPaddle);
+    new PlayerInput(this.playerPaddle, this);
   }
   update(timeChange){
+    if (this.gamescreen === GAMESCREEN.PAUSE) return;
     this.gameObjects.forEach((object) => object.update(timeChange));
+    this.gameObjects = this.gameObjects.filter(object => !object.destroyBrick);
   }
   draw(ctx) {
+    // Set up ability to draw each object.
     this.gameObjects.forEach((object) => object.draw(ctx));
+
+    if(this.gamescreen === GAMESCREEN.PAUSE) {
+        // Darken game screen when paused.
+      ctx.rect(0, 0, this.interactiveWidth, this.interactiveHeight);
+      ctx.fillStyle = "rgba(255,128,90,0.7)";
+      ctx.fill();
+
+      // Game pause text.
+      ctx.font = "70px Georgia";
+      ctx.fillStyle = "#055";
+      ctx.textAlign = "center";
+      ctx.fillText("Pause Game", this.interactiveWidth / 2, this.interactiveHeight / 2);
+    }
+  }
+  // Toggles pause and active gamescreens.
+  pause() {
+    if (this.gamescreen === GAMESCREEN.PAUSE) {
+      this.gamescreen = GAMESCREEN.ACTIVE;
+    } else {
+      this.gamescreen = GAMESCREEN.PAUSE;
+    }
   }
 }
 
