@@ -130,9 +130,13 @@ class Ball {
     if(this.position.x + this.size > this.interactiveWidth || this.position.x < 0) {
       this.speed.x = -this.speed.x;
     }
-    // Reverses motion if ball hits the floor or ceiling.
-    if(this.position.y + this.size > this.interactiveHeight || this.position.y < 0) {
+    // Reverses motion if ball hits the ceiling.
+    if(this.position.y < 0) {
       this.speed.y = -this.speed.y;
+    }
+    // Lower tries by 1 if ball hits the floor.
+    if(this.position.y + this.size >= this.interactiveHeight) {
+      this.gameStructureEngine.gameTries--;
     }
 
     // Reverses motion if ball hits player paddle.
@@ -243,7 +247,7 @@ class GameStructure {
     this.interactiveWidth = interactiveWidth;
     this.interactiveHeight = interactiveHeight;
 
-    //  Game begins at main menu.
+    // Game begins at main menu.
     this.gameScreen = GAMESCREEN.MAINMENU;
 
     // Define an interactive player paddle.
@@ -254,6 +258,9 @@ class GameStructure {
 
     // Define record for all gameObjects to interact.
     this.gameObjects = [];
+
+    // Define number of tries left before game over.
+    this.gameTries = 1;
 
     // Define player keyboard actions.
     new PlayerInput(this.playerPaddle, this);
@@ -271,11 +278,17 @@ class GameStructure {
     this.gameScreen = GAMESCREEN.ACTIVE;
   }
   update(timeChange){
+
+    // If game runs out of tries, go to game over screen.
+    if (this.gameTries === 0) this.gameScreen = GAMESCREEN.GAMEOVER;
+
     if (
       this.gameScreen === GAMESCREEN.MAINMENU ||
-      this.gameScreen === GAMESCREEN.PAUSE
+      this.gameScreen === GAMESCREEN.PAUSE ||
+      this.gameScreen === GAMESCREEN.GAMEOVER
     )
       return;
+
     this.gameObjects.forEach((object) => object.update(timeChange));
     this.gameObjects = this.gameObjects.filter(object => !object.destroyBrick);
   }
@@ -284,9 +297,9 @@ class GameStructure {
     this.gameObjects.forEach((object) => object.draw(ctx));
 
     if(this.gameScreen === GAMESCREEN.MAINMENU) {
-        // Darken game screen when paused.
+      // Color screen when in main menu.
       ctx.rect(0, 0, this.interactiveWidth, this.interactiveHeight);
-      ctx.fillStyle = "rgba(64,128,255,0.6)";
+      ctx.fillStyle = "#fff";
       ctx.fill();
 
       // Game main menu text.
@@ -294,7 +307,7 @@ class GameStructure {
       ctx.fillStyle = "#055";
       ctx.textAlign = "center";
       ctx.shadowBlur = 3;
-      ctx.shadowColor = "#f0f";
+      ctx.shadowColor = "#06f";
       ctx.fillText(
         "Press Space to Begin",
         this.interactiveWidth / 2,
@@ -303,7 +316,7 @@ class GameStructure {
     }
 
     if(this.gameScreen === GAMESCREEN.PAUSE) {
-        // Darken game screen when paused.
+      // Darken game screen when paused.
       ctx.rect(0, 0, this.interactiveWidth, this.interactiveHeight);
       ctx.fillStyle = "rgba(255,128,90,0.7)";
       ctx.fill();
@@ -314,6 +327,25 @@ class GameStructure {
       ctx.textAlign = "center";
       ctx.fillText(
         "Pause Game",
+        this.interactiveWidth / 2,
+        this.interactiveHeight / 2
+      );
+    }
+
+    if(this.gameScreen === GAMESCREEN.GAMEOVER) {
+      // Color screen when in game over.
+      ctx.rect(0, 0, this.interactiveWidth, this.interactiveHeight);
+      ctx.fillStyle = "rgba(0,0,40,0.8)";
+      ctx.fill();
+
+      // Game over text.
+      ctx.font = "60px Georgia";
+      ctx.fillStyle = "#f00";
+      ctx.textAlign = "center";
+      ctx.shadowBlur = 10;
+      ctx.shadowColor = "#f00";
+      ctx.fillText(
+        "Game Over",
         this.interactiveWidth / 2,
         this.interactiveHeight / 2
       );
