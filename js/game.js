@@ -106,12 +106,17 @@ class Ball {
 
     // Define ball size.
     this.size = 8;
-    // this.maxSpeed = 4;
+
+    this.ballRestart();
+  }
+  // Set speed and position of ball at beginning of game and after losing a try.
+  ballRestart() {
     this.speed = { x: 8, y: 8};
 
     // Define ball start location.
     this.position = { x: playableWidth / 3 , y: playableHeight / 1.4 };
   }
+
   // Color in the ball.
   draw(ctx) {
     ctx.shadowBlur = 2;
@@ -121,6 +126,7 @@ class Ball {
     ctx.arc(this.position.x, this.position.y, this.size, this.size, this.size * Math.PI);
     ctx.stroke();
   }
+
   // Moves position based on change in time.
   update(timeChange) {
     // Changes position based on defined speed for each frame.
@@ -137,6 +143,7 @@ class Ball {
     // Lower tries by 1 if ball hits the floor.
     if(this.position.y + this.size >= this.interactiveHeight) {
       this.gameStructureEngine.gameTries--;
+      this.ballRestart();
     }
 
     // Reverses motion if ball hits player paddle.
@@ -260,7 +267,7 @@ class GameStructure {
     this.gameObjects = [];
 
     // Define number of tries left before game over.
-    this.gameTries = 1;
+    this.gameTries = 3;
 
     // Define player keyboard actions.
     new PlayerInput(this.playerPaddle, this);
