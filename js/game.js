@@ -13,7 +13,11 @@ class PlayerInput {
         case 39:
           playerPaddle.motionRight();
           break;
-          // Pause or unpause the game with p key.
+        // Pause or unpause the game with p key.
+        case 32:
+          gameStructureEngine.gameBegin();
+          break;
+        // Pause or unpause the game with p key.
         case 80:
           gameStructureEngine.pause();
           break;
@@ -239,10 +243,8 @@ class GameStructure {
     this.interactiveWidth = interactiveWidth;
     this.interactiveHeight = interactiveHeight;
 
-  }
-  gameBegin() {
-
-    this.gamescreen = GAMESCREEN.ACTIVE;
+    //  Game begins at main menu.
+    this.gameScreen = GAMESCREEN.MAINMENU;
 
     // Define an interactive player paddle.
     this.playerPaddle = new PlayerPaddle(this);
@@ -250,16 +252,30 @@ class GameStructure {
     // Define an interactive ball.
     this.gameBall = new Ball(this);
 
+    // Define record for all gameObjects to interact.
+    this.gameObjects = [];
+
+    // Define player keyboard actions.
+    new PlayerInput(this.playerPaddle, this);
+  }
+  gameBegin() {
+    // Stop game stage from being reset when hitting space after game begins.
+    if(this.gameScreen !== GAMESCREEN.MAINMENU) return;
+
     let bricks = buildStage(this, stage1);
 
     // Define gameObjects to be acted upon in bulk elsewhere.
     this.gameObjects = [this.playerPaddle,this.gameBall, ...bricks];
 
-    // Define player keyboard actions.
-    new PlayerInput(this.playerPaddle, this);
+    // Change game screen to active game.
+    this.gameScreen = GAMESCREEN.ACTIVE;
   }
   update(timeChange){
-    if (this.gamescreen === GAMESCREEN.PAUSE) return;
+    if (
+      this.gameScreen === GAMESCREEN.MAINMENU ||
+      this.gameScreen === GAMESCREEN.PAUSE
+    )
+      return;
     this.gameObjects.forEach((object) => object.update(timeChange));
     this.gameObjects = this.gameObjects.filter(object => !object.destroyBrick);
   }
@@ -267,7 +283,26 @@ class GameStructure {
     // Set up ability to draw each object.
     this.gameObjects.forEach((object) => object.draw(ctx));
 
-    if(this.gamescreen === GAMESCREEN.PAUSE) {
+    if(this.gameScreen === GAMESCREEN.MAINMENU) {
+        // Darken game screen when paused.
+      ctx.rect(0, 0, this.interactiveWidth, this.interactiveHeight);
+      ctx.fillStyle = "rgba(64,128,255,0.6)";
+      ctx.fill();
+
+      // Game main menu text.
+      ctx.font = "60px Georgia";
+      ctx.fillStyle = "#055";
+      ctx.textAlign = "center";
+      ctx.shadowBlur = 3;
+      ctx.shadowColor = "#f0f";
+      ctx.fillText(
+        "Press Space to Begin",
+        this.interactiveWidth / 2,
+        this.interactiveHeight / 3
+      );
+    }
+
+    if(this.gameScreen === GAMESCREEN.PAUSE) {
         // Darken game screen when paused.
       ctx.rect(0, 0, this.interactiveWidth, this.interactiveHeight);
       ctx.fillStyle = "rgba(255,128,90,0.7)";
@@ -277,15 +312,19 @@ class GameStructure {
       ctx.font = "70px Georgia";
       ctx.fillStyle = "#055";
       ctx.textAlign = "center";
-      ctx.fillText("Pause Game", this.interactiveWidth / 2, this.interactiveHeight / 2);
+      ctx.fillText(
+        "Pause Game",
+        this.interactiveWidth / 2,
+        this.interactiveHeight / 2
+      );
     }
   }
   // Toggles pause and active gamescreens.
   pause() {
-    if (this.gamescreen === GAMESCREEN.PAUSE) {
-      this.gamescreen = GAMESCREEN.ACTIVE;
+    if (this.gameScreen === GAMESCREEN.PAUSE) {
+      this.gameScreen = GAMESCREEN.ACTIVE;
     } else {
-      this.gamescreen = GAMESCREEN.PAUSE;
+      this.gameScreen = GAMESCREEN.PAUSE;
     }
   }
 }
@@ -302,7 +341,6 @@ const playableHeight = 600;
 
 // Brings in dynamics between different game objects.
 let gameStructureEngine = new GameStructure(playableWidth, playableHeight);
-gameStructureEngine.gameBegin();
 
 let timePrevious = 0;
 
