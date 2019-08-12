@@ -114,7 +114,7 @@ class Ball {
     this.speed = { x: 8, y: 8};
 
     // Define ball start location.
-    this.position = { x: playableWidth / 3 , y: playableHeight / 1.4 };
+    this.position = { x: playableWidth / 8, y: playableHeight / 2.5 };
   }
 
   // Color in the ball.
@@ -122,9 +122,9 @@ class Ball {
     ctx.shadowBlur = 2;
     ctx.shadowColor = "#f00";
     ctx.fillStyle = "#000";
-    // ctx.fillRect(this.position.x, this.position.y, this.size, this.size);
-    ctx.arc(this.position.x, this.position.y, this.size, this.size, this.size * Math.PI);
-    ctx.stroke();
+    ctx.fillRect(this.position.x, this.position.y, this.size, this.size);
+    // ctx.arc(this.position.x, this.position.y, this.size, this.size, this.size * Math.PI);
+    // ctx.stroke();
   }
 
   // Moves position based on change in time.
@@ -229,13 +229,39 @@ function buildStage(gameStructureEngine, stage) {
 
 const stage1 = [
   [0, 1, 1, 0, 0, 1, 1, 1, 0, 0, 1, 1],
-  [0, 1, 1, 0, 0, 1, 1, 1, 0, 0, 1, 1],
-  [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0],
-  [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0],
-  [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0],
-  [0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0]
+  [0, 0, 1, 1, 0, 1, 1, 1, 0, 1, 1, 0],
+  [0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0],
+  [0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0],
+  [0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0],
+  [0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0]
 ];
 
+const stage2 = [
+  [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+  [0, 1, 1, 0, 0, 1, 1, 1, 0, 0, 1, 1],
+  [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0],
+  [0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 1, 0],
+  [0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0],
+  [0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0]
+];
+
+const stage3 = [
+  [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+  [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+  [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+  [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+  [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+  [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+];
+
+const stage4 = [
+  [0, 0, 0, 0, 1, 1, 0, 1, 1, 0, 0, 0],
+  [0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0],
+  [0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0],
+  [0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0],
+  [0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0],
+  [0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0]
+];
 
 
 //  Game Dynamics
@@ -244,7 +270,8 @@ const GAMESCREEN = {
   PAUSE: 0,
   ACTIVE: 1,
   MAINMENU: 2,
-  GAMEOVER: 3
+  GAMEOVER: 3,
+  NEXTSTAGE: 4
 }
 
 class GameStructure {
@@ -266,6 +293,13 @@ class GameStructure {
     // Define record for all gameObjects to interact.
     this.gameObjects = [];
 
+    // Define bricks in a stage.
+    this.bricks = [];
+
+    // Define game stages as brick patterns.
+    this.stages = [stage1, stage2, stage3, stage4];
+    this.gameStage = 0;
+
     // Define number of tries left before game over.
     this.gameTries = 3;
 
@@ -274,12 +308,18 @@ class GameStructure {
   }
   gameBegin() {
     // Stop game stage from being reset when hitting space after game begins.
-    if(this.gameScreen !== GAMESCREEN.MAINMENU) return;
+    if (
+      this.gameScreen !== GAMESCREEN.MAINMENU &&
+      this.gameScreen !== GAMESCREEN.NEXTSTAGE
+    )
+      return;
 
-    let bricks = buildStage(this, stage1);
+    this.bricks = buildStage(this, this.stages[this.gameStage]);
+
+    this.gameBall.ballRestart();
 
     // Define gameObjects to be acted upon in bulk elsewhere.
-    this.gameObjects = [this.playerPaddle,this.gameBall, ...bricks];
+    this.gameObjects = [this.playerPaddle, this.gameBall];
 
     // Change game screen to active game.
     this.gameScreen = GAMESCREEN.ACTIVE;
@@ -296,12 +336,24 @@ class GameStructure {
     )
       return;
 
-    this.gameObjects.forEach((object) => object.update(timeChange));
-    this.gameObjects = this.gameObjects.filter(object => !object.destroyBrick);
+    // If all bricks in a stage are destroyed, load next stage.
+    if (this.bricks.length === 0) {
+      this.gameStage++;
+      this.gameScreen = GAMESCREEN.NEXTSTAGE;
+      this.gameBegin();
+    }
+
+    // Spreads all gameObjects and bricks into an array.
+    [...this.gameObjects, ...this.bricks].forEach((object) =>
+      object.update(timeChange)
+    );
+
+    // Destroy bricks when contacted by an object.
+    this.bricks = this.bricks.filter(brick => !brick.destroyBrick);
   }
   draw(ctx) {
     // Set up ability to draw each object.
-    this.gameObjects.forEach((object) => object.draw(ctx));
+    [...this.gameObjects, ...this.bricks].forEach((object) => object.draw(ctx));
 
     if(this.gameScreen === GAMESCREEN.MAINMENU) {
       // Color screen when in main menu.
